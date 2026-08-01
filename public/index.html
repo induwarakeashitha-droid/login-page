@@ -1,0 +1,98 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Auth Test</title>
+<style>
+  body {
+    font-family: system-ui, sans-serif;
+    max-width: 400px;
+    margin: 60px auto;
+    color: #222;
+  }
+  h2 { margin-top: 40px; }
+  input {
+    display: block;
+    width: 100%;
+    padding: 8px;
+    margin: 6px 0;
+    box-sizing: border-box;
+  }
+  button {
+    padding: 8px 16px;
+    margin-top: 8px;
+    cursor: pointer;
+  }
+  pre {
+    background: #f4f4f4;
+    padding: 10px;
+    white-space: pre-wrap;
+    word-break: break-all;
+  }
+</style>
+</head>
+<body>
+
+<h2>Register</h2>
+<input id="regEmail" placeholder="email">
+<input id="regPassword" type="password" placeholder="password">
+<button onclick="register()">Register</button>
+
+<h2>Login</h2>
+<input id="loginEmail" placeholder="email">
+<input id="loginPassword" type="password" placeholder="password">
+<button onclick="login()">Login</button>
+
+<h2>Protected route</h2>
+<button onclick="getMe()">Get /me</button>
+
+<pre id="output">results show up here</pre>
+
+<script>
+let token = null;
+
+async function register() {
+  const email = document.getElementById('regEmail').value;
+  const password = document.getElementById('regPassword').value;
+
+  const res = await fetch('/api/auth/register', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ email, password })
+  });
+
+  show(await res.json());
+}
+
+async function login() {
+  const email = document.getElementById('loginEmail').value;
+  const password = document.getElementById('loginPassword').value;
+
+  const res = await fetch('/api/auth/login', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ email, password })
+  });
+
+  const data = await res.json();
+  if (data.token) token = data.token;
+  show(data);
+}
+
+async function getMe() {
+  if (!token) return show({ message: 'login first, no token stored' });
+
+  const res = await fetch('/api/auth/me', {
+    headers: { Authorization: `Bearer ${token}` }
+  });
+
+  show(await res.json());
+}
+
+function show(data) {
+  document.getElementById('output').textContent = JSON.stringify(data, null, 2);
+}
+</script>
+
+</body>
+</html>
