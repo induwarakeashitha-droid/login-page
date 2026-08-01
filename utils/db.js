@@ -1,15 +1,11 @@
-const fs = require('fs');
-const path = require('path');
+const { Pool } = require('pg');
 
-const dbPath = path.join(__dirname, '..', 'data', 'users.json');
+const pool = new Pool({
+  host: process.env.DB_HOST,
+  port: process.env.DB_PORT,
+  user: process.env.DB_USER,
+  password: process.env.DB_PASSWORD,
+  database: process.env.DB_NAME
+});
 
-function readUsers() {
-  const raw = fs.readFileSync(dbPath, 'utf-8');
-  return JSON.parse(raw);
-}
-
-function writeUsers(users) {
-  fs.writeFileSync(dbPath, JSON.stringify(users, null, 2));
-}
-
-module.exports = { readUsers, writeUsers };
+module.exports = pool;

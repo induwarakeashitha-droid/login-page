@@ -1,7 +1,7 @@
 const express = require('express');
 const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
-const { readUsers, writeUsers } = require('../utils/db');
+const pool = require('../utils/db');
 const verifyToken = require('../middleware/auth');
 
 const router = express.Router();
@@ -13,43 +13,54 @@ router.post('/register', async (req, res) => {
     return res.status(400).json({ message: 'email and password required' });
   }
 
-  const users = readUsers();
-  const exists = users.find(u => u.email === email);
+  try {
+    const hashed = await bcrypt.hash(password, 10);
 
-  if (exists) {
-    return res.status(409).json({ message: 'user already exists' });
+    await pool.query(
+      'INSERT INTO users (email, password) VALUES ($1, $2)',
+      [email, hashed]
+    );
+
+    res.status(201).json({ message: 'user created' });
+  } catch (err) {
+    if (err.code === '23505') {
+      return res.status(409).json({ message: 'user already exists' });
+    }
+    console.error(err);
+    res.status(500).json({ message: 'something went wrong' });
   }
-
-  const hashed = await bcrypt.hash(password, 10);
-  const newUser = { id: Date.now().toString(), email, password: hashed };
-
-  users.push(newUser);
-  writeUsers(users);
-
-  res.status(201).json({ message: 'user created' });
 });
 
 router.post('/login', async (req, res) => {
   const { email, password } = req.body;
-  const users = readUsers();
-  const user = users.find(u => u.email === email);
 
-  if (!user) {
-    return res.status(401).json({ message: 'invalid credentials' });
+  try {
+    const result = await pool.query(
+      'SELECT * FROM users WHERE email = $1',
+      [email]
+    );
+    const user = result.rows[0];
+
+    if (!user) {
+      return res.status(401).json({ message: 'invalid credentials' });
+    }
+
+    const match = await bcrypt.compare(password, user.password);
+    if (!match) {
+      return res.status(401).json({ message: 'invalid credentials' });
+    }
+
+    const token = jwt.sign(
+      { id: user.id, email: user.email },
+      process.env.JWT_SECRET,
+      { expiresIn: '1h' }
+    );
+
+    res.json({ token });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ message: 'something went wrong' });
   }
-
-  const match = await bcrypt.compare(password, user.password);
-  if (!match) {
-    return res.status(401).json({ message: 'invalid credentials' });
-  }
-
-  const token = jwt.sign(
-    { id: user.id, email: user.email },
-    process.env.JWT_SECRET,
-    { expiresIn: '1h' }
-  );
-
-  res.json({ token });
 });
 
 router.get('/me', verifyToken, (req, res) => {
