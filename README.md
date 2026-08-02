@@ -63,4 +63,4 @@ GET  /api/auth/me         Authorization: Bearer <token>
 - swap `utils/db.js` for a real database (Postgres/Mongo/Supabase) without touching the routes
 - add refresh tokens so users don't get logged out every hour
 - add express-validator for stronger input checks
-- rate limit `/login` to slow down brute force attempts
+- rate limit `/login` to slow down brute force attempts nigga
