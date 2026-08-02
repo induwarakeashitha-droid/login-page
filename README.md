@@ -14,10 +14,24 @@ Open `.env` and set `JWT_SECRET` to any random string.
 ## Run
 
 ```
+docker compose up -d
 node server.js
 ```
 
 Then open http://localhost:5000 to test register/login/protected route through the browser, or hit the API directly:
+
+For database browsing, open http://localhost:5050 and sign in with:
+
+- Email: admin@example.com
+- Password: admin
+
+When adding a server in pgAdmin, use:
+
+- Host name/address: db
+- Port: 5433
+- Maintenance database: auth_db
+- Username: auth_user
+- Password: auth_pass
 
 ```
 POST /api/auth/register   { email, password }

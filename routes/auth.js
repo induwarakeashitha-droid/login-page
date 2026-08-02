@@ -5,6 +5,7 @@ const pool = require('../utils/db');
 const verifyToken = require('../middleware/auth');
 
 const router = express.Router();
+const jwtSecret = process.env.JWT_SECRET || 'dev-secret-change-me';
 
 router.post('/register', async (req, res) => {
   const { email, password } = req.body;
@@ -52,7 +53,7 @@ router.post('/login', async (req, res) => {
 
     const token = jwt.sign(
       { id: user.id, email: user.email },
-      process.env.JWT_SECRET,
+      jwtSecret,
       { expiresIn: '1h' }
     );
 
