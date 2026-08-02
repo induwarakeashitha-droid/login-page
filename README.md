@@ -28,10 +28,20 @@ For database browsing, open http://localhost:5050 and sign in with:
 When adding a server in pgAdmin, use:
 
 - Host name/address: db
-- Port: 5433
+- Port: 5432
 - Maintenance database: auth_db
 - Username: auth_user
 - Password: auth_pass
+
+If you are connecting from Windows directly, use:
+
+- Host: localhost
+- Port: 5433
+- Database: auth_db
+- Username: auth_user
+- Password: auth_pass
+
+API endpoints:
 
 ```
 POST /api/auth/register   { email, password }
